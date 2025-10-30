@@ -1,280 +1,292 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Créer un CV - Version Test</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Création CV Pro - Prévisualisation</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f5f7fa;
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
+    body { background:#f5f5f5; padding:20px; }
+    h2,h3 { color:#333; }
+    h2 { text-align:center; margin-bottom:20px; }
+
+    /* Container principal */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
     }
-    h1 {
-      text-align: center;
-      color: #2b3e50;
+
+    /* Formulaire */
+    .form-section {
+      flex: 1 1 400px;
+      background:#fff;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
     }
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      max-width: 800px;
-      margin: auto;
+    .form-section h3 { margin-bottom:10px; }
+    input, textarea, select {
+      width:100%;
+      padding:10px 12px;
+      margin:8px 0;
+      border:1px solid #ccc;
+      border-radius:8px;
+      font-size:14px;
     }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .actions { text-align: center; margin-top: 20px; }
+    textarea { resize: vertical; min-height:60px; }
     button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #2b3e50;
-      color: white;
+      background: linear-gradient(90deg, #1e3c72, #2a5298);
+      color:#fff;
+      padding:10px 18px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:14px;
+      margin-top:10px;
+      transition: all 0.2s;
     }
-    #preview {
-      margin-top: 30px;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
+    button:hover { transform: scale(1.03); }
+
+    /* Sections dynamiques (expériences/formations) */
+    .sub { margin-bottom:12px; padding:10px; border:1px solid #e0e0e0; border-radius:8px; background:#f9f9f9; }
+
+    /* Prévisualisation */
+    .preview-section {
+      flex: 1 1 500px;
+      background:#fff;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+      max-height: 90vh;
+      overflow-y: auto;
     }
-    #previewPhoto {
-      display: block;
-      margin: 10px auto;
-      border-radius: 50%;
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
+    .preview-section h3 { text-align:center; margin-bottom:15px; }
+
+    /* Prévisualisation PDF style */
+    #cv-preview {
+      width: 100%;
+      border:1px solid #ccc;
+      border-radius:8px;
+      height: 100%;
+    }
+
+    /* Responsive */
+    @media (max-width:900px) {
+      .container { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <h1>Créer votre CV</h1>
-  <form id="cvForm">
-    <label>Photo de profil</label>
-    <input type="file" id="photo" accept="image/*" />
 
-    <label>Nom</label>
-    <input type="text" id="nom" required />
+  <h2>Créer votre CV Pro avec Prévisualisation</h2>
 
-    <label>Prénom</label>
-    <input type="text" id="prenom" required />
+  <div class="container">
+    <!-- Formulaire -->
+    <div class="form-section">
+      <h3>Infos personnelles</h3>
+      <input type="text" id="prenom" placeholder="Prénom">
+      <input type="text" id="nom" placeholder="Nom">
+      <input type="email" id="email" placeholder="Email">
+      <input type="text" id="telephone" placeholder="Téléphone">
 
-    <label>Email</label>
-    <input type="email" id="email" required />
+      <h3>Titre & Profil</h3>
+      <input type="text" id="titre" placeholder="Titre du poste">
+      <textarea id="profil" placeholder="Présentation / Profil professionnel"></textarea>
 
-    <label>Téléphone</label>
-    <input type="text" id="telephone" />
+      <h3>Compétences</h3>
+      <input type="text" id="competences" placeholder="Compétences (séparées par virgule)">
 
-    <label>Titre du poste</label>
-    <input type="text" id="titre" placeholder="Ex: Développeur Web" />
+      <h3>Expériences professionnelles</h3>
+      <div id="experiences"></div>
+      <button type="button" onclick="addExperience()">+ Ajouter une expérience</button>
 
-    <label>Profil</label>
-    <textarea id="profil"></textarea>
+      <h3>Formations</h3>
+      <div id="formations"></div>
+      <button type="button" onclick="addFormation()">+ Ajouter une formation</button>
 
-    <label>Compétences (séparées par des virgules)</label>
-    <input type="text" id="competences" placeholder="HTML, CSS, JS..." />
+      <h3>Langues</h3>
+      <input type="text" id="langues" placeholder="Langues (séparées par virgule)">
 
-    <label>Langues (séparées par des virgules)</label>
-    <input type="text" id="langues" placeholder="Français, Anglais..." />
+      <h3>Photo de profil</h3>
+      <input type="file" id="photo">
 
-    <h3>Expériences</h3>
-    <div>
-      <input class="exp-poste" placeholder="Poste" />
-      <input class="exp-entreprise" placeholder="Entreprise" />
-      <input class="exp-periode" placeholder="Période" />
-      <textarea class="exp-desc" placeholder="Description"></textarea>
+      <div style="text-align:center; margin-top:15px;">
+        <button type="button" onclick="generatePDF()">📄 Générer PDF</button>
+        <button type="button" onclick="saveToFirestore()">💾 Enregistrer</button>
+      </div>
     </div>
 
-    <h3>Formations</h3>
-    <div>
-      <input class="form-diplome" placeholder="Diplôme" />
-      <input class="form-etablissement" placeholder="Établissement" />
-      <input class="form-annee" placeholder="Année" />
+    <!-- Prévisualisation -->
+    <div class="preview-section">
+      <h3>Prévisualisation du CV</h3>
+      <iframe id="cv-preview"></iframe>
     </div>
-
-    <div class="actions">
-      <button type="button" id="pdfBtn">📄 Générer PDF</button>
-      <button type="button" id="saveBtn">💾 Enregistrer</button>
-    </div>
-  </form>
-
-  <div id="preview">
-    <img id="previewPhoto" src="" alt="Photo de profil" />
-    <h2 id="pNom"></h2>
-    <h3 id="pTitre"></h3>
-    <p id="pProfil"></p>
-    <p><b>Compétences :</b> <span id="pCompetences"></span></p>
-    <p><b>Langues :</b> <span id="pLangues"></span></p>
   </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-  <script type="module">
-    // --- 🔥 Import Firebase ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDTEtE2wZdOH-er8RZvKrYSCfvQxaOdrbU",
-      authDomain: "cv-generator-64183.firebaseapp.com",
-      projectId: "cv-generator-64183",
-      storageBucket: "cv-generator-64183.firebasestorage.app",
-      messagingSenderId: "324040703397",
-      appId: "1:324040703397:web:7e14624c1e52d16795fc4c",
-      measurementId: "G-K58PS63MKS"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    getAnalytics(app);
-    
-    // Vérification de la connexion
-const auth = getAuth();
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("✅ Utilisateur connecté :", user.email);
-  } else {
-    alert("⚠️ Vous devez être connecté pour accéder à cette page !");
-    window.location.href = "login.html"; // redirection si non connecté
-  }
-});
-
-    // --- 📸 Photo base64 ---
-    let photoBase64 = "";
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("cvForm");
-      const preview = document.getElementById("preview");
-      const fileInput = document.getElementById("photo");
-
-      fileInput.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(evt) {
-            photoBase64 = evt.target.result;
-            document.getElementById("previewPhoto").src = photoBase64;
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-
-      form.addEventListener("input", updatePreview);
-      document.getElementById("saveBtn").addEventListener("click", saveToFirestore);
-      document.getElementById("pdfBtn").addEventListener("click", generatePDF);
-    });
-
-    // --- 🪄 Mise à jour prévisualisation ---
-    function updatePreview() {
-      document.getElementById("pNom").innerText = document.getElementById("nom").value + " " + document.getElementById("prenom").value;
-      document.getElementById("pTitre").innerText = document.getElementById("titre").value;
-      document.getElementById("pProfil").innerText = document.getElementById("profil").value;
-      document.getElementById("pCompetences").innerText = document.getElementById("competences").value;
-      document.getElementById("pLangues").innerText = document.getElementById("langues").value;
+  <!-- JS dynamique pour expériences / formations -->
+  <script>
+    function addExperience() {
+      const div = document.createElement('div');
+      div.classList.add('sub');
+      div.innerHTML = `
+        <input type="text" class="poste" placeholder="Poste">
+        <input type="text" class="entreprise" placeholder="Entreprise">
+        <input type="text" class="periode" placeholder="Période">
+        <textarea class="description" placeholder="Description"></textarea>
+      `;
+      document.getElementById('experiences').appendChild(div);
     }
 
-    // --- 💾 Sauvegarde Firestore ---
-    async function saveToFirestore() {
-      const data = collectFormData();
-      try {
-        await addDoc(collection(db, "cvs"), {
-          ...data,
-          userID: user,
-          dateCreation: serverTimestamp()
-        });
-        alert("✅ CV enregistré dans Firestore !");
-      } catch (e) {
-        console.error("Erreur Firestore:", e);
-        alert("❌ Erreur lors de l'enregistrement.");
-      }
-    }
-
-    // --- 🧩 Collecte des données du formulaire ---
-    function collectFormData() {
-      return {
-        nom: document.getElementById("nom").value,
-        prenom: document.getElementById("prenom").value,
-        email: document.getElementById("email").value,
-        telephone: document.getElementById("telephone").value,
-        titre: document.getElementById("titre").value,
-        profil: document.getElementById("profil").value,
-        competences: document.getElementById("competences").value.split(",").map(c => c.trim()).filter(Boolean),
-        langues: document.getElementById("langues").value.split(",").map(l => l.trim()).filter(Boolean),
-        experiences: collectListItems("exp"),
-        formations: collectListItems("form")
-      };
-    }
-
-    function collectListItems(prefix) {
-      const postes = document.querySelectorAll(`.${prefix}-poste`);
-      const entreprises = document.querySelectorAll(`.${prefix}-entreprise`);
-      const periodes = document.querySelectorAll(`.${prefix}-periode`);
-      const descriptions = document.querySelectorAll(`.${prefix}-desc`);
-      const items = [];
-      for (let i = 0; i < postes.length; i++) {
-        if (postes[i].value)
-          items.push({
-            poste: postes[i].value,
-            entreprise: entreprises[i].value,
-            periode: periodes[i].value,
-            description: descriptions[i].value
-          });
-      }
-      return items;
-    }
-
-    // --- 📄 Génération PDF ---
-    function generatePDF() {
-      const data = collectFormData();
-
-      const content = [
-        {
-          columns: [
-            photoBase64
-              ? { image: photoBase64, width: 80, alignment: "right" }
-              : {},
-            { text: `${data.prenom} ${data.nom}`, style: "header", alignment: "left" }
-          ]
-        },
-        { text: data.titre, style: "subheader" },
-        { text: data.profil, margin: [0, 10, 0, 10] },
-        { text: "Compétences", style: "section" },
-        { ul: data.competences },
-        { text: "Expériences", style: "section" },
-        ...data.experiences.map(exp => ({
-          text: `${exp.poste} - ${exp.entreprise} (${exp.periode})\n${exp.description}`,
-          margin: [0, 2, 0, 2]
-        })),
-        { text: "Formations", style: "section" },
-        ...data.formations.map(f => ({
-          text: `${f.diplome} - ${f.etablissement} (${f.annee})`,
-          margin: [0, 2, 0, 2]
-        })),
-        { text: "Langues", style: "section" },
-        { ul: data.langues }
-      ];
-
-      const docDef = {
-        content,
-        styles: {
-          header: { fontSize: 22, bold: true },
-          subheader: { fontSize: 16, italics: true },
-          section: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] }
-        }
-      };
-
-      pdfMake.createPdf(docDef).download(`CV_${data.prenom}_${data.nom}.pdf`);
+    function addFormation() {
+      const div = document.createElement('div');
+      div.classList.add('sub');
+      div.innerHTML = `
+        <input type="text" class="diplome" placeholder="Diplôme">
+        <input type="text" class="etablissement" placeholder="Établissement">
+        <input type="text" class="annee" placeholder="Année">
+      `;
+      document.getElementById('formations').appendChild(div);
     }
   </script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<script>
+  // 🔥 Config Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDTEtE2wZdOH-er8RZvKrYSCfvQxaOdrbU",
+    authDomain: "cv-generator-64183.firebaseapp.com",
+    projectId: "cv-generator-64183",
+    storageBucket: "cv-generator-64183.firebasestorage.app",
+    messagingSenderId: "324040703397",
+    appId: "1:324040703397:web:7e14624c1e52d16795fc4c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // 🔹 Convertir photo en base64
+  function getPhotoBase64(fileInput) {
+    return new Promise(resolve => {
+      const file = fileInput.files[0];
+      if (!file) return resolve(null);
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 🔹 Récupérer les expériences/formations
+  function getExperiences() {
+    return Array.from(document.querySelectorAll("#experiences .sub")).map(div => ({
+      poste: div.querySelector(".poste").value,
+      entreprise: div.querySelector(".entreprise").value,
+      periode: div.querySelector(".periode").value,
+      description: div.querySelector(".description").value
+    }));
+  }
+  function getFormations() {
+    return Array.from(document.querySelectorAll("#formations .sub")).map(div => ({
+      diplome: div.querySelector(".diplome").value,
+      etablissement: div.querySelector(".etablissement").value,
+      annee: div.querySelector(".annee").value
+    }));
+  }
+
+  // 🔹 Générer docDefinition PDF
+  async function getDocDefinition() {
+    const photo = await getPhotoBase64(document.getElementById("photo"));
+    const experiences = getExperiences();
+    const formations = getFormations();
+    return {
+      pageSize: 'A4',
+      pageMargins: [40,40,40,40],
+      content: [
+        { text: document.getElementById("prenom").value + " " + document.getElementById("nom").value, style:'header' },
+        { text: document.getElementById("titre").value, style:'subheader', margin:[0,0,0,10] },
+        { text: "Profil", style:'sectionHeader' },
+        { text: document.getElementById("profil").value, margin:[0,0,0,10] },
+        { text: "Compétences", style:'sectionHeader' },
+        { ul: document.getElementById("competences").value.split(',').map(s=>s.trim()), margin:[0,0,0,10] },
+        { text: "Expériences", style:'sectionHeader' },
+        ...experiences.map(exp=>({ stack:[
+          { text: exp.poste+" - "+exp.entreprise+" ("+exp.periode+")", bold:true },
+          { text: exp.description, margin:[0,0,0,5] }
+        ]})),
+        { text: "Formations", style:'sectionHeader', margin:[0,10,0,0] },
+        ...formations.map(f=>({ text:`${f.diplome} - ${f.etablissement} (${f.annee})`, margin:[0,0,0,5] })),
+        { text: "Langues", style:'sectionHeader', margin:[0,10,0,0] },
+        { ul: document.getElementById("langues").value.split(',').map(s=>s.trim()) },
+        photo ? { image: photo, width:100, alignment:'right', margin:[0,10,0,0] } : ''
+      ],
+      styles:{
+        header:{ fontSize:20, bold:true, color:'#1e3c72' },
+        subheader:{ fontSize:16, italics:true, color:'#2a5298' },
+        sectionHeader:{ fontSize:14, bold:true, margin:[0,10,0,5], color:'#333' }
+      }
+    };
+  }
+
+  // 🔹 Prévisualisation live
+  async function updatePreview() {
+    const docDef = await getDocDefinition();
+    pdfMake.createPdf(docDef).getDataUrl((url)=>{
+      document.getElementById("cv-preview").src = url;
+    });
+  }
+
+  // 🔹 Enregistrer Firestore
+  async function saveToFirestore() {
+    const experiences = getExperiences();
+    const formations = getFormations();
+    const cvData = {
+      userID: "test_user",
+      nom: document.getElementById("nom").value,
+      prenom: document.getElementById("prenom").value,
+      email: document.getElementById("email").value,
+      telephone: document.getElementById("telephone").value,
+      titre: document.getElementById("titre").value,
+      profil: document.getElementById("profil").value,
+      competences: document.getElementById("competences").value.split(',').map(s=>s.trim()),
+      langues: document.getElementById("langues").value.split(',').map(s=>s.trim()),
+      experiences,
+      formations,
+      dateCreation: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    try {
+      await db.collection("cvs").add(cvData);
+      alert("✅ CV enregistré dans Firestore !");
+    } catch(err) {
+      alert("❌ Erreur : "+err.message);
+    }
+  }
+
+  // 🔹 Générer PDF et téléchargement
+  async function generatePDF() {
+    const docDef = await getDocDefinition();
+    pdfMake.createPdf(docDef).download('CV_'+document.getElementById("prenom").value+'.pdf');
+  }
+
+  // 🔹 Événements pour prévisualisation live
+  const fields = ["prenom","nom","titre","profil","competences","langues","photo"];
+  fields.forEach(id=>{
+    document.getElementById(id).addEventListener('input', updatePreview);
+  });
+
+  // Observer les ajouts d'expériences/formations
+  const observerExp = new MutationObserver(updatePreview);
+  observerExp.observe(document.getElementById("experiences"), {childList:true, subtree:true});
+  const observerForm = new MutationObserver(updatePreview);
+  observerForm.observe(document.getElementById("formations"), {childList:true, subtree:true});
+
+  // Prévisualisation au chargement
+  updatePreview();
+</script>
+
 </body>
-</html>
+  </html>
