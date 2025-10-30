@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un CV - Version Test</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f7fa;
+    }
+    h1 {
+      text-align: center;
+      color: #2b3e50;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
+    }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .actions { text-align: center; margin-top: 20px; }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2b3e50;
+      color: white;
+    }
+    #preview {
+      margin-top: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    #previewPhoto {
+      display: block;
+      margin: 10px auto;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <h1>Créer votre CV</h1>
+  <form id="cvForm">
+    <label>Photo de profil</label>
+    <input type="file" id="photo" accept="image/*" />
+
+    <label>Nom</label>
+    <input type="text" id="nom" required />
+
+    <label>Prénom</label>
+    <input type="text" id="prenom" required />
+
+    <label>Email</label>
+    <input type="email" id="email" required />
+
+    <label>Téléphone</label>
+    <input type="text" id="telephone" />
+
+    <label>Titre du poste</label>
+    <input type="text" id="titre" placeholder="Ex: Développeur Web" />
+
+    <label>Profil</label>
+    <textarea id="profil"></textarea>
+
+    <label>Compétences (séparées par des virgules)</label>
+    <input type="text" id="competences" placeholder="HTML, CSS, JS..." />
+
+    <label>Langues (séparées par des virgules)</label>
+    <input type="text" id="langues" placeholder="Français, Anglais..." />
+
+    <h3>Expériences</h3>
+    <div>
+      <input class="exp-poste" placeholder="Poste" />
+      <input class="exp-entreprise" placeholder="Entreprise" />
+      <input class="exp-periode" placeholder="Période" />
+      <textarea class="exp-desc" placeholder="Description"></textarea>
+    </div>
+
+    <h3>Formations</h3>
+    <div>
+      <input class="form-diplome" placeholder="Diplôme" />
+      <input class="form-etablissement" placeholder="Établissement" />
+      <input class="form-annee" placeholder="Année" />
+    </div>
+
+    <div class="actions">
+      <button type="button" id="pdfBtn">📄 Générer PDF</button>
+      <button type="button" id="saveBtn">💾 Enregistrer</button>
+    </div>
+  </form>
+
+  <div id="preview">
+    <img id="previewPhoto" src="" alt="Photo de profil" />
+    <h2 id="pNom"></h2>
+    <h3 id="pTitre"></h3>
+    <p id="pProfil"></p>
+    <p><b>Compétences :</b> <span id="pCompetences"></span></p>
+    <p><b>Langues :</b> <span id="pLangues"></span></p>
+  </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script type="module">
+    // --- 🔥 Import Firebase ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTEtE2wZdOH-er8RZvKrYSCfvQxaOdrbU",
+      authDomain: "cv-generator-64183.firebaseapp.com",
+      projectId: "cv-generator-64183",
+      storageBucket: "cv-generator-64183.firebasestorage.app",
+      messagingSenderId: "324040703397",
+      appId: "1:324040703397:web:7e14624c1e52d16795fc4c",
+      measurementId: "G-K58PS63MKS"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    getAnalytics(app);
+    
+    // Vérification de la connexion
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("✅ Utilisateur connecté :", user.email);
+  } else {
+    alert("⚠️ Vous devez être connecté pour accéder à cette page !");
+    window.location.href = "login.html"; // redirection si non connecté
+  }
+});
+
+    // --- 📸 Photo base64 ---
+    let photoBase64 = "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("cvForm");
+      const preview = document.getElementById("preview");
+      const fileInput = document.getElementById("photo");
+
+      fileInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            photoBase64 = evt.target.result;
+            document.getElementById("previewPhoto").src = photoBase64;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      form.addEventListener("input", updatePreview);
+      document.getElementById("saveBtn").addEventListener("click", saveToFirestore);
+      document.getElementById("pdfBtn").addEventListener("click", generatePDF);
+    });
+
+    // --- 🪄 Mise à jour prévisualisation ---
+    function updatePreview() {
+      document.getElementById("pNom").innerText = document.getElementById("nom").value + " " + document.getElementById("prenom").value;
+      document.getElementById("pTitre").innerText = document.getElementById("titre").value;
+      document.getElementById("pProfil").innerText = document.getElementById("profil").value;
+      document.getElementById("pCompetences").innerText = document.getElementById("competences").value;
+      document.getElementById("pLangues").innerText = document.getElementById("langues").value;
+    }
+
+    // --- 💾 Sauvegarde Firestore ---
+    async function saveToFirestore() {
+      const data = collectFormData();
+      try {
+        await addDoc(collection(db, "cvs"), {
+          ...data,
+          userID: user,
+          dateCreation: serverTimestamp()
+        });
+        alert("✅ CV enregistré dans Firestore !");
+      } catch (e) {
+        console.error("Erreur Firestore:", e);
+        alert("❌ Erreur lors de l'enregistrement.");
+      }
+    }
+
+    // --- 🧩 Collecte des données du formulaire ---
+    function collectFormData() {
+      return {
+        nom: document.getElementById("nom").value,
+        prenom: document.getElementById("prenom").value,
+        email: document.getElementById("email").value,
+        telephone: document.getElementById("telephone").value,
+        titre: document.getElementById("titre").value,
+        profil: document.getElementById("profil").value,
+        competences: document.getElementById("competences").value.split(",").map(c => c.trim()).filter(Boolean),
+        langues: document.getElementById("langues").value.split(",").map(l => l.trim()).filter(Boolean),
+        experiences: collectListItems("exp"),
+        formations: collectListItems("form")
+      };
+    }
+
+    function collectListItems(prefix) {
+      const postes = document.querySelectorAll(`.${prefix}-poste`);
+      const entreprises = document.querySelectorAll(`.${prefix}-entreprise`);
+      const periodes = document.querySelectorAll(`.${prefix}-periode`);
+      const descriptions = document.querySelectorAll(`.${prefix}-desc`);
+      const items = [];
+      for (let i = 0; i < postes.length; i++) {
+        if (postes[i].value)
+          items.push({
+            poste: postes[i].value,
+            entreprise: entreprises[i].value,
+            periode: periodes[i].value,
+            description: descriptions[i].value
+          });
+      }
+      return items;
+    }
+
+    // --- 📄 Génération PDF ---
+    function generatePDF() {
+      const data = collectFormData();
+
+      const content = [
+        {
+          columns: [
+            photoBase64
+              ? { image: photoBase64, width: 80, alignment: "right" }
+              : {},
+            { text: `${data.prenom} ${data.nom}`, style: "header", alignment: "left" }
+          ]
+        },
+        { text: data.titre, style: "subheader" },
+        { text: data.profil, margin: [0, 10, 0, 10] },
+        { text: "Compétences", style: "section" },
+        { ul: data.competences },
+        { text: "Expériences", style: "section" },
+        ...data.experiences.map(exp => ({
+          text: `${exp.poste} - ${exp.entreprise} (${exp.periode})\n${exp.description}`,
+          margin: [0, 2, 0, 2]
+        })),
+        { text: "Formations", style: "section" },
+        ...data.formations.map(f => ({
+          text: `${f.diplome} - ${f.etablissement} (${f.annee})`,
+          margin: [0, 2, 0, 2]
+        })),
+        { text: "Langues", style: "section" },
+        { ul: data.langues }
+      ];
+
+      const docDef = {
+        content,
+        styles: {
+          header: { fontSize: 22, bold: true },
+          subheader: { fontSize: 16, italics: true },
+          section: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] }
+        }
+      };
+
+      pdfMake.createPdf(docDef).download(`CV_${data.prenom}_${data.nom}.pdf`);
+    }
+  </script>
+</body>
+</html>
